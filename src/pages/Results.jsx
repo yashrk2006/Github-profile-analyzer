@@ -142,7 +142,9 @@ const Results = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 className="glass-panel p-8 max-w-md border-rose-500/30"
             >
-                <h2 className="text-3xl font-bold text-rose-500 mb-4">Profile Not Found</h2>
+                <h2 className="text-3xl font-bold text-rose-500 mb-4">
+                    {error.includes('Rate Limit') ? 'Rate Limit Exceeded' : 'Analysis Failed'}
+                </h2>
                 <p className="text-gray-400 mb-6">{error}</p>
                 <Link to="/" className="btn-primary inline-block px-6 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white transition">Try Another Profile</Link>
             </motion.div>

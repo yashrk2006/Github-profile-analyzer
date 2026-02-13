@@ -147,8 +147,10 @@ app.get('/api/analyze/:username', async (req, res) => {
             (scores.technical * WEIGHTS.technical)
         );
 
-        // Recommendations Logic
+        // Recommendations Logic (Initialize array before use if not already)
         const recommendations = [];
+
+        // Check scores before pushing
         if (scores.documentation < 50) recommendations.push({
             type: 'critical',
             title: 'Improve Documentation',
@@ -164,7 +166,9 @@ app.get('/api/analyze/:username', async (req, res) => {
             title: 'Expand Tech Stack',
             text: 'You seem to stick to one language. Try building a small project in a different language to show versatility.'
         });
-        if (userProfile.bio === null) recommendations.push({
+
+        // Fix: Ensure bio check handles null/undefined safely
+        if (!userProfile.bio) recommendations.push({
             type: 'easy-win',
             title: 'Add a Bio',
             text: 'Your profile lacks a bio. Write a short professional summary of who you are and what you do.'
@@ -178,7 +182,10 @@ app.get('/api/analyze/:username', async (req, res) => {
                 bio: userProfile.bio,
                 location: userProfile.location,
                 followers: userProfile.followers,
-                public_repos: userProfile.public_repos
+                public_repos: userProfile.public_repos,
+                twitter_username: userProfile.twitter_username, // Added for frontend
+                company: userProfile.company, // Added for frontend
+                following: userProfile.following // Added for frontend
             },
             scores: {
                 overall: overallScore,
@@ -190,8 +197,17 @@ app.get('/api/analyze/:username', async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Analysis error:', error.message);
-        res.status(500).json({ error: 'Failed to analyze profile' });
+        console.error('SERVER ERROR:', error.message);
+
+        // Handle Rate Limiting specifically
+        if (error.response && (error.response.status === 403 || error.response.status === 429)) {
+            return res.status(403).json({
+                error: 'GitHub API Rate Limit Exceeded. Please try again later or add a GITHUB_TOKEN to .env.'
+            });
+        }
+
+        // Handle other specific errors if needed
+        res.status(500).json({ error: 'Failed to analyze profile. Please check the username or try again later.' });
     }
 });
 
