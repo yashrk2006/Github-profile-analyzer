@@ -33,15 +33,16 @@ const CodeDNA = ({ languages }) => {
         plugins: {
             legend: {
                 display: true,
-                position: 'right',
+                position: 'bottom',
                 labels: {
                     color: '#8b949e',
                     font: {
                         family: 'Inter',
-                        size: 11
+                        size: 10
                     },
-                    boxWidth: 10,
+                    boxWidth: 8,
                     usePointStyle: true,
+                    padding: 15
                 }
             },
             tooltip: {

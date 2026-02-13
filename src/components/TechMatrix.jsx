@@ -20,7 +20,7 @@ const TechMatrix = ({ languages }) => {
                 </h3>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 h-[240px] overflow-y-auto pr-2 custom-scrollbar">
+            <div className="grid grid-cols-2 gap-2 h-[240px] overflow-y-auto pr-2 custom-scrollbar">
                 {sortedLangs.map(([lang, bytes], index) => {
                     const percentage = ((bytes / totalBytes) * 100).toFixed(1);
                     return (

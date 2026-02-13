@@ -316,7 +316,7 @@ const Landing = () => {
                     </div>
                 </div>
                 <div className="text-center mt-12 text-gray-600 text-xs">
-                    © 2026 GitHub Portfolio Analyzer. Built with ❤️ for the dev community.
+                    © 2026 GitHub Portfolio Analyzer.
                 </div>
             </footer>
 
