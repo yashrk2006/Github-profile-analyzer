@@ -55,7 +55,9 @@ const Results = () => {
                 }
             } catch (err) {
                 if (isMounted) {
-                    setError(err.response?.data?.error || 'Failed to analyze profile');
+                    // Safely handle error object to prevent React #31
+                    const msg = err.response?.data?.error || err.message || 'Failed to analyze profile';
+                    setError(typeof msg === 'object' ? JSON.stringify(msg) : String(msg));
                     setLoading(false);
                     clearTimeout(tipTimer);
                 }
@@ -92,7 +94,7 @@ const Results = () => {
                 className="glass-panel p-8 max-w-md border-rose-500/30"
             >
                 <h2 className="text-3xl font-bold text-rose-500 mb-4">Profile Not Found</h2>
-                <p className="text-gray-400 mb-6">{error}. Please check the username.</p>
+                <p className="text-gray-400 mb-6">{error}</p>
                 <Link to="/" className="btn-primary w-full shadow-lg shadow-rose-900/20 bg-rose-600 hover:bg-rose-500">Try Another Profile</Link>
             </motion.div>
         </div>
