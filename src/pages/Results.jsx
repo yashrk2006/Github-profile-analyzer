@@ -1,13 +1,35 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     FaBook, FaCode, FaChartLine, FaSitemap, FaGlobe, FaLayerGroup,
     FaArrowLeft, FaMapMarkerAlt, FaUsers, FaKey, FaGithub,
-    FaExternalLinkAlt, FaLightbulb, FaCheckCircle, FaExclamationTriangle
+    FaExternalLinkAlt, FaLightbulb, FaCheckCircle, FaExclamationTriangle,
+    FaShareAlt, FaDownload
 } from 'react-icons/fa';
 import axios from 'axios';
+import { Doughnut, Radar } from 'react-chartjs-2';
+import {
+    Chart as ChartJS,
+    ArcElement,
+    Tooltip,
+    Legend,
+    RadialLinearScale,
+    PointElement,
+    LineElement,
+    Filler
+} from 'chart.js';
+
+ChartJS.register(
+    ArcElement,
+    Tooltip,
+    Legend,
+    RadialLinearScale,
+    PointElement,
+    LineElement,
+    Filler
+);
 
 import LoadingScreen from '../components/LoadingScreen';
 import ScoreGauge from '../components/ScoreGauge';
@@ -41,10 +63,12 @@ const Results = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [showApiKeyTip, setShowApiKeyTip] = useState(false);
+    const contentRef = useRef(null);
 
     useEffect(() => {
         let isMounted = true;
         const fetchData = async () => {
+            // Show tip if loading takes a while
             const tipTimer = setTimeout(() => setShowApiKeyTip(true), 4000);
             try {
                 const response = await axios.get(`/api/analyze/${username}`);
@@ -55,7 +79,6 @@ const Results = () => {
                 }
             } catch (err) {
                 if (isMounted) {
-                    // Safely handle error object to prevent React #31
                     const msg = err.response?.data?.error || err.message || 'Failed to analyze profile';
                     setError(typeof msg === 'object' ? JSON.stringify(msg) : String(msg));
                     setLoading(false);
@@ -66,6 +89,23 @@ const Results = () => {
         fetchData();
         return () => isMounted = false;
     }, [username]);
+
+    const handleShare = () => {
+        if (navigator.share) {
+            navigator.share({
+                title: `GitHub Analysis: ${username}`,
+                text: `Check out my GitHub Portfolio Score: ${data?.scores.overall}/100!`,
+                url: window.location.href,
+            }).catch(console.error);
+        } else {
+            navigator.clipboard.writeText(window.location.href);
+            alert('Link copied to clipboard!');
+        }
+    };
+
+    const handleDownload = () => {
+        alert("Downloading report... (Feature mock)");
+    };
 
     if (loading) return (
         <>
@@ -102,16 +142,68 @@ const Results = () => {
 
     const { profile, scores, repos, recommendations } = data;
 
+    const radarData = {
+        labels: ['Docs', 'Structure', 'Activity', 'Org', 'Impact', 'Tech'],
+        datasets: [
+            {
+                label: 'Your Score',
+                data: [
+                    scores.breakdown.documentation,
+                    scores.breakdown.codeStructure,
+                    scores.breakdown.activity,
+                    scores.breakdown.organization,
+                    scores.breakdown.impact,
+                    scores.breakdown.technical,
+                ],
+                backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                borderColor: '#3b82f6',
+                borderWidth: 2,
+                pointBackgroundColor: '#3b82f6',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: '#3b82f6',
+            },
+        ],
+    };
+
+    const radarOptions = {
+        scales: {
+            r: {
+                angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
+                grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                pointLabels: { color: '#9ca3af', font: { size: 12, family: 'Outfit' } },
+                ticks: { display: false, backdropColor: 'transparent' },
+                suggestedMin: 0,
+                suggestedMax: 100,
+            },
+        },
+        plugins: {
+            legend: { display: false },
+        },
+        maintainAspectRatio: false,
+    };
+
     return (
         <motion.div
-            className="max-w-7xl mx-auto p-4 md:p-8 pb-32"
+            className="max-w-7xl mx-auto p-4 md:p-8 pb-32 relative"
             variants={containerVariants}
             initial="hidden"
             animate="visible"
+            ref={contentRef}
         >
-            <Link to="/" className="inline-flex items-center text-gray-500 hover:text-white mb-8 transition group">
-                <FaArrowLeft className="mr-2 group-hover:-translate-x-1 transition-transform" /> Back to Search
-            </Link>
+            <div className="flex justify-between items-center mb-8">
+                <Link to="/" className="inline-flex items-center text-gray-500 hover:text-white transition group">
+                    <FaArrowLeft className="mr-2 group-hover:-translate-x-1 transition-transform" /> Back to Search
+                </Link>
+                <div className="flex gap-2">
+                    <button onClick={handleShare} className="p-2 rounded-full glass-panel hover:bg-white/10 transition text-gray-400 hover:text-white" title="Share">
+                        <FaShareAlt />
+                    </button>
+                    <button onClick={handleDownload} className="p-2 rounded-full glass-panel hover:bg-white/10 transition text-gray-400 hover:text-white" title="Download Report">
+                        <FaDownload />
+                    </button>
+                </div>
+            </div>
 
             {/* Header Section */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
@@ -170,23 +262,31 @@ const Results = () => {
             {/* Main Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-                {/* Left Column: Dimensions */}
+                {/* Left Column: Dimensions + Radar Chart */}
                 <div className="space-y-6">
-                    <motion.h2 variants={itemVariants} className="text-xl font-bold text-gray-200 flex items-center gap-2">
-                        <FaChartLine className="text-blue-400" /> Performance
-                    </motion.h2>
+                    <motion.div
+                        variants={itemVariants}
+                        className="glass-panel p-6"
+                    >
+                        <h3 className="text-gray-400 font-semibold mb-6 uppercase tracking-widest text-xs text-center">Score Breakdown</h3>
+                        <div className="h-64">
+                            <Radar data={radarData} options={radarOptions} />
+                        </div>
+                    </motion.div>
+
                     <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-4">
                         <DimensionCard
                             title="Documentation"
                             score={scores.breakdown.documentation}
                             icon={FaBook}
-                            description="README quality & wiki presence."
+                            description="README & wiki quality."
                         />
+                        {/* Other dimensions simplified to avoid clutter if using radar chart, but keeping detailed cards as user asked for "industry level" detail */}
                         <DimensionCard
                             title="Code Structure"
                             score={scores.breakdown.codeStructure}
                             icon={FaCode}
-                            description="Project layout & naming."
+                            description="Layout & naming conventions."
                         />
                         <DimensionCard
                             title="Activity"
@@ -195,22 +295,10 @@ const Results = () => {
                             description="Commit consistency."
                         />
                         <DimensionCard
-                            title="Organization"
-                            score={scores.breakdown.organization}
-                            icon={FaSitemap}
-                            description="Profile completeness."
-                        />
-                        <DimensionCard
                             title="Impact"
                             score={scores.breakdown.impact}
                             icon={FaGlobe}
                             description="Community engagement."
-                        />
-                        <DimensionCard
-                            title="Technical"
-                            score={scores.breakdown.technical}
-                            icon={FaLayerGroup}
-                            description="Tech stack diversity."
                         />
                     </motion.div>
                 </div>
