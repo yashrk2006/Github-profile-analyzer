@@ -153,16 +153,58 @@ const Landing = () => {
             </div>
 
             {/* Hero Section */}
-            <section className="relative z-10 py-32 bg-[#0d1117]/30 border-t border-white/5">
-                <div className="max-w-7xl mx-auto px-6">
+            <section className="relative z-10 min-h-screen flex flex-col justify-center items-center py-20 bg-[#0d1117]/30 border-t border-white/5">
+                <div className="max-w-7xl mx-auto px-6 w-full">
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        className="text-center mb-20"
+                        className="text-center mb-12"
                     >
-                        <h2 className="text-4xl md:text-6xl font-black mb-6 tracking-tight">Why Analyze?</h2>
-                        <p className="text-gray-400 text-lg max-w-2xl mx-auto font-light">Stand out in a competitive job market with data-driven insights.</p>
+                        <h2 className="text-4xl md:text-6xl font-black mb-6 tracking-tight">
+                            Analyze Any <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 animate-gradient-x">Developer.</span>
+                        </h2>
+                        <p className="text-gray-400 text-lg max-w-2xl mx-auto font-light mb-10">
+                            Instant insights, recruiter-ready metrics, and deep GitHub analytics.
+                        </p>
+
+                        {/* Massive Search Bar */}
+                        <form onSubmit={handleSubmit} className="w-full max-w-2xl mx-auto relative group z-50">
+                            <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+
+                            <div className="relative flex items-center bg-[#0d1117] rounded-full p-2 border border-[#30363d] shadow-2xl transition-all transform hover:scale-[1.01] hover:border-blue-500/50 focus-within:ring-2 focus-within:ring-blue-500/20">
+                                <FaSearch className="text-gray-500 ml-6 group-focus-within:text-blue-400 transition-colors" size={20} />
+
+                                <input
+                                    type="text"
+                                    placeholder="Enter a GitHub username..."
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    className="bg-transparent border-none text-white text-lg w-full px-4 py-4 focus:ring-0 placeholder-gray-600 font-normal outline-none"
+                                />
+
+                                <button
+                                    type="submit"
+                                    className="bg-blue-600 hover:bg-blue-500 text-white p-4 rounded-full font-bold transition-all shadow-lg flex items-center justify-center aspect-square mr-2"
+                                >
+                                    <FaArrowRight size={18} />
+                                </button>
+                            </div>
+                        </form>
+
+                        <div className="flex justify-center gap-6 mt-8 text-sm text-gray-500 font-medium">
+                            <span>Popular:</span>
+                            {['torvalds', 'sindresorhus', 'shadcn'].map((user) => (
+                                <button
+                                    key={user}
+                                    type="button"
+                                    onClick={() => { setUsername(user); navigate(`/analyze/${user}`); }} // Fix: Navigate on click
+                                    className="text-blue-400 hover:text-blue-300 transition-all hover:underline"
+                                >
+                                    {user}
+                                </button>
+                            ))}
+                        </div>
                     </motion.div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

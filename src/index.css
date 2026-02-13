@@ -10,12 +10,16 @@
   font-weight: 400;
   color-scheme: dark;
   color: rgba(255, 255, 255, 0.9);
-  background-color: #0d1117;
+  background-color: #0b1015;
+  /* Deep Void */
 
-  --primary: #58a6ff;
-  --secondary: #238636;
-  --accent: #bc8cff;
-  --bg-deep: #050505;
+  --primary: #2f81f7;
+  /* Electric Blue */
+  --secondary: #3fb950;
+  /* Neon Green */
+  --accent: #f85149;
+  /* Red Flag Red */
+  --bg-deep: #0b1015;
   --bg-card: rgba(22, 27, 34, 0.6);
   --border: rgba(48, 54, 61, 0.6);
   --text-muted: #8b949e;
@@ -89,14 +93,24 @@ body::before {
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-  border-radius: 16px;
+  border-radius: 12px;
+  /* More angular for FUI */
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fui-panel-green {
+  @apply glass-panel border-l-4 border-l-green-500;
+}
+
+.fui-panel-red {
+  @apply glass-panel border-l-4 border-l-red-500;
 }
 
 .glass-panel:hover {
   background: rgba(30, 35, 45, 0.7);
-  border-color: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  border-color: rgba(47, 129, 247, 0.3);
+  /* Blue glow on hover */
+  box-shadow: 0 0 20px rgba(47, 129, 247, 0.1);
   transform: translateY(-2px);
 }
 

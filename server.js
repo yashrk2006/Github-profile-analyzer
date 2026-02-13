@@ -9,10 +9,16 @@ import { fileURLToPath } from 'url';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3004;
 
 app.use(cors());
 app.use(express.json());
+
+// Request Logging Middleware
+app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    next();
+});
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const HEADERS = GITHUB_TOKEN ? { Authorization: `token ${GITHUB_TOKEN}` } : {};
@@ -74,7 +80,7 @@ app.get('/api/analyze/:username', async (req, res) => {
         // Concurrent Fetching
         const [userProfile, repos, events] = await Promise.all([
             fetchGitHub(`https://api.github.com/users/${username}`),
-            fetchGitHub(`https://api.github.com/users/${username}/repos?sort=updated&per_page=100`).catch(() => []),
+            fetchGitHub(`https://api.github.com/users/${username}/repos?sort=updated&per_page=30`).catch(() => []),
             fetchGitHub(`https://api.github.com/users/${username}/events/public?per_page=30`).catch(() => [])
         ]);
 
@@ -146,6 +152,22 @@ app.get('/api/analyze/:username', async (req, res) => {
             (scores.impact * WEIGHTS.impact) +
             (scores.technical * WEIGHTS.technical)
         );
+        const strengths = [];
+        const redFlags = [];
+
+        // 1. Analyze Strengths
+        if (scores.documentation > 80) strengths.push({ icon: 'FaBook', text: 'Documentation Pro' });
+        if (scores.impact > 70) strengths.push({ icon: 'FaStar', text: 'High Impact' });
+        if (scores.activity > 80) strengths.push({ icon: 'FaFire', text: 'Consistent Shipper' });
+        if (Object.keys(languages).length > 4) strengths.push({ icon: 'FaCode', text: 'Polyglot' });
+        if (userProfile.followers > 50) strengths.push({ icon: 'FaUsers', text: 'Community Leader' });
+        if (strengths.length === 0) strengths.push({ icon: 'FaLaptop', text: 'Rising Developer' });
+
+        // 2. Analyze Red Flags
+        if (scores.documentation < 30) redFlags.push({ icon: 'FaExclamationTriangle', text: 'Missing Docs' });
+        if (scores.activity < 30) redFlags.push({ icon: 'FaRegCalendarTimes', text: 'Ghost Town Activity' });
+        if (totalStars < 5) redFlags.push({ icon: 'FaRegSadTear', text: 'Low Engagement' });
+        if (Object.keys(languages).length === 1) redFlags.push({ icon: 'FaLayerGroup', text: 'Single Language' });
 
         // Recommendations Logic (Initialize array before use if not already)
         const recommendations = [];
@@ -193,7 +215,10 @@ app.get('/api/analyze/:username', async (req, res) => {
             },
             repos: repoScores.slice(0, 6),
             languages,
-            recommendations
+            strengths,
+            redFlags,
+            recommendations,
+            events: events.slice(0, 100) // Return top 100 events for heatmap
         });
 
     } catch (error) {

@@ -41,6 +41,28 @@ Designed with **"Maximum Smoothidity"** in mind — featuring fluid animations, 
 - **Backend**: Express.js (GitHub API Proxy, Scoring Logic)
 - **Utilities**: Axios, React Router, React Icons
 
+## 🎥 Demo Video
+
+> [!IMPORTANT]
+> **Mandatory for Hackathon Submission**: Watch the database-backed analysis in action.
+>
+> [![Demo Video](https://img.youtube.com/vi/PLACEHOLDER_VIDEO_ID/0.jpg)](https://www.youtube.com/watch?v=PLACEHOLDER_VIDEO_ID)
+> *(Replace this link with your actual screen recording)*
+
+## 🏆 Hackathon Evaluation Criteria Compliance
+
+This project addresses the **"Turn Repositories into Recruiter-Ready Proof"** challenge by:
+
+1.  **Strict "Recruiter Vision"**: Identifying **Green Flags** (Strengths) and **Red Flags** (Weaknesses) instantly.
+2.  **Objective Scoring**: Using a weighted algorithm across 6 dimensions (Docs, Code, Activity, Organization, Impact, Technical).
+3.  **Actionable Feedback**: Providing specific "To-Do" lists rather than generic advice.
+4.  **"Maximum Smoothidity" UI**: A premium, engaging capability demonstration.
+
+### Key Metrics
+- **Impact**: Instant analysis (< 2s) of any public profile.
+- **Innovation**: "Hacker-style" terminal visuals combined with deep data insights.
+- **Technical Execution**: Parallelized API fetching (`Promise.all`), robust error handling (403 rate limits), and concurrent frontend/backend architecture.
+
 ## 🚀 Getting Started
 
 ### Prerequisites
