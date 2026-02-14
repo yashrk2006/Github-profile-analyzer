@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FaGithub, FaMapMarkerAlt, FaBuilding, FaTwitter, FaUsers, FaArrowLeft, FaExternalLinkAlt, FaStar, FaCodeBranch, FaHistory, FaEye } from 'react-icons/fa';
+import { FaGithub, FaMapMarkerAlt, FaBuilding, FaTwitter, FaUsers, FaArrowLeft, FaExternalLinkAlt, FaStar, FaCodeBranch, FaHistory, FaEye, FaSearch } from 'react-icons/fa';
 import axios from 'axios';
 import StrengthsPanel from '../components/StrengthsPanel';
 import RiskPanel from '../components/RiskPanel';
@@ -64,14 +64,40 @@ const Results = () => {
 
     if (error) {
         return (
-            <div className="min-h-screen bg-[#0b1015] flex items-center justify-center p-4">
-                <div className="glass-panel p-8 max-w-lg w-full text-center border-red-500/30">
-                    <h2 className="text-2xl font-bold text-red-500 mb-4">Scan Failed</h2>
-                    <p className="text-gray-400 mb-6">{error}</p>
-                    <Link to="/" className="text-blue-400 hover:text-blue-300 flex items-center justify-center gap-2">
-                        <FaArrowLeft /> Return to Base
+            <div className="min-h-screen bg-[#0b1015] flex items-center justify-center p-4 relative overflow-hidden">
+                {/* Background Glow */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-red-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+
+                <motion.div
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="glass-panel p-8 max-w-lg w-full text-center border-red-500/30 relative z-10"
+                >
+                    <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/20 shadow-[0_0_30px_rgba(239,68,68,0.2)]">
+                        <FaGithub className="text-red-500 text-4xl" />
+                    </div>
+
+                    <h2 className="text-3xl font-black text-white mb-2 tracking-tight">User Not Found</h2>
+                    <p className="text-gray-400 mb-8 text-lg">
+                        We couldn't locate <span className="text-red-400 font-mono font-bold">@{username}</span> on GitHub.
+                    </p>
+
+                    <div className="bg-[#0d1117] p-4 rounded-lg border border-[#30363d] mb-8 text-left">
+                        <h4 className="text-gray-500 text-xs uppercase tracking-wider font-bold mb-2">Troubleshooting:</h4>
+                        <ul className="text-sm text-gray-400 space-y-2 list-disc pl-4">
+                            <li>Check for typos (e.g. <span className="text-gray-300">"john-doe"</span> vs <span className="text-gray-300">"johndoe"</span>)</li>
+                            <li>Ensure the account is public</li>
+                            <li>Verify the username explicitly on github.com</li>
+                        </ul>
+                    </div>
+
+                    <Link
+                        to="/"
+                        className="inline-flex items-center justify-center gap-2 px-8 py-3 bg-red-600 hover:bg-red-500 text-white rounded-full font-bold transition-all hover:scale-105 shadow-[0_0_20px_rgba(220,38,38,0.4)] w-full"
+                    >
+                        <FaSearch /> Search Again
                     </Link>
-                </div>
+                </motion.div>
             </div>
         );
     }

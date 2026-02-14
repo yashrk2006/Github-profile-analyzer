@@ -26,19 +26,19 @@ function ElegantShape({
                 rotate: rotate,
             }}
             transition={{
-                duration: 2.4,
+                duration: 4.5, // Much slower
                 delay,
-                ease: [0.23, 0.86, 0.39, 0.96],
-                opacity: { duration: 1.2 },
+                ease: [0.2, 0.8, 0.2, 1], // Cinematic easing
+                opacity: { duration: 2.0 },
             }}
             className={cn("absolute", className)}
         >
             <motion.div
                 animate={{
-                    y: [0, 15, 0],
+                    y: [0, 25, 0], // Slower float
                 }}
                 transition={{
-                    duration: 12,
+                    duration: 18, // Very slow float
                     repeat: Number.POSITIVE_INFINITY,
                     ease: "easeInOut",
                 }}
@@ -157,17 +157,24 @@ function HeroGeometric({
                             animate="visible"
                         >
                             <h1 className="text-4xl sm:text-6xl md:text-8xl font-bold mb-6 md:mb-8 tracking-tight">
-                                <span className="bg-clip-text text-transparent bg-gradient-to-b from-white to-white/80">
+                                <motion.span
+                                    initial={{ opacity: 0, filter: "blur(10px)" }}
+                                    animate={{ opacity: 1, filter: "blur(0px)" }}
+                                    transition={{ duration: 1.5, ease: "easeOut" }}
+                                    className="bg-clip-text text-transparent bg-gradient-to-b from-white to-white/80 block"
+                                >
                                     {title1}
-                                </span>
-                                <br />
-                                <span
+                                </motion.span>
+                                <motion.span
+                                    initial={{ opacity: 0, filter: "blur(10px)" }}
+                                    animate={{ opacity: 1, filter: "blur(0px)" }}
+                                    transition={{ duration: 1.5, delay: 0.5, ease: "easeOut" }}
                                     className={cn(
-                                        "bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white/90 to-rose-300 "
+                                        "bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white/90 to-rose-300 block mt-2"
                                     )}
                                 >
                                     {title2}
-                                </span>
+                                </motion.span>
                             </h1>
                         </motion.div>
 

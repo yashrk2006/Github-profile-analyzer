@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FaGithub, FaArrowRight, FaSearch, FaCode, FaChartPie, FaLightbulb, FaRocket, FaShieldAlt, FaMagic, FaCheckCircle } from 'react-icons/fa';
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 import { HeroGeometric } from '../components/ui/shape-landing-hero';
+import SearchComponent from '../components/ui/animated-glowing-search-bar';
 
 // --- Components ---
 
@@ -163,28 +164,13 @@ const Landing = () => {
                         </p>
 
                         {/* Massive Search Bar */}
-                        <form onSubmit={handleSubmit} className="w-full max-w-3xl mx-auto relative group z-50">
-                            <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full blur opacity-25 group-hover:opacity-40 transition duration-500 group-hover:duration-200 animate-tilt"></div>
-
-                            <div className="relative flex items-center bg-[#0d1117]/80 backdrop-blur-xl rounded-full p-2 border border-white/10 shadow-2xl transition-all transform group-hover:scale-[1.01] group-hover:border-blue-500/50 focus-within:ring-2 focus-within:ring-blue-500/20">
-                                <FaSearch className="text-gray-500 ml-6 group-focus-within:text-blue-400 transition-colors" size={22} />
-
-                                <input
-                                    type="text"
-                                    placeholder="Enter GitHub username..."
-                                    value={username}
-                                    onChange={(e) => setUsername(e.target.value)}
-                                    className="bg-transparent border-none text-white text-xl w-full px-4 py-5 focus:ring-0 placeholder-gray-600 font-medium outline-none"
-                                />
-
-                                <button
-                                    type="submit"
-                                    className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white p-5 rounded-full font-bold transition-all shadow-[0_0_20px_rgba(37,99,235,0.4)] flex items-center justify-center aspect-square mr-1 hover:scale-105 active:scale-95"
-                                >
-                                    <FaArrowRight size={20} />
-                                </button>
-                            </div>
-                        </form>
+                        <div className="w-full max-w-3xl mx-auto relative z-50 py-4">
+                            <SearchComponent
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
+                                onSubmit={handleSubmit}
+                            />
+                        </div>
 
                         <div className="flex flex-wrap justify-center gap-4 mt-10 text-sm font-medium relative z-20">
                             <span className="text-gray-500 py-1">Trending:</span>
