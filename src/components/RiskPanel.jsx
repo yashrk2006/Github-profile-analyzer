@@ -19,8 +19,9 @@ const RiskPanel = ({ redFlags }) => {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
-            className="flex flex-col gap-4 h-full"
+            className="h-full p-6 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-sm relative overflow-hidden group hover:border-red-500/30 transition-all duration-500 flex flex-col"
         >
+            <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/10 rounded-full blur-[60px] -translate-y-1/2 translate-x-1/2 group-hover:bg-red-500/20 transition-all duration-500"></div>
             <div className="flex items-center justify-between mb-2">
                 <h3 className="text-sm font-bold text-red-500 tracking-widest uppercase flex items-center gap-2">
                     <FaExclamationTriangle /> Risk Analysis
@@ -50,8 +51,13 @@ const RiskPanel = ({ redFlags }) => {
                         );
                     })
                 ) : (
-                    <div className="fui-panel p-4 border-l-4 border-l-green-500">
-                        <p className="text-sm text-gray-200">No critical risks detected. Clean record.</p>
+                    <div className="bg-white/5 border border-white/5 p-4 rounded-xl flex items-start gap-4 hover:bg-white/10 transition-colors">
+                        <div className="mt-1 text-green-400 p-2 bg-green-500/10 rounded-lg shrink-0">
+                            <FaExclamationTriangle size={14} />
+                        </div>
+                        <div>
+                            <p className="text-sm text-gray-200">No critical risks detected. Clean record.</p>
+                        </div>
                     </div>
                 )}
             </div>

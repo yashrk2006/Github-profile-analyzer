@@ -18,8 +18,9 @@ const StrengthsPanel = ({ strengths }) => {
         <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="flex flex-col gap-4 h-full"
+            className="h-full p-6 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-sm relative overflow-hidden group hover:border-green-500/30 transition-all duration-500 flex flex-col gap-4"
         >
+            <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/10 rounded-full blur-[60px] -translate-y-1/2 translate-x-1/2 group-hover:bg-green-500/20 transition-all duration-500"></div>
             <div className="flex items-center justify-between mb-2">
                 <h3 className="text-sm font-bold text-green-500 tracking-widest uppercase flex items-center gap-2">
                     <FaCheckCircle /> Core Strengths
@@ -29,12 +30,12 @@ const StrengthsPanel = ({ strengths }) => {
                 </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-4 max-h-[320px]">
                 {strengths && strengths.length > 0 ? (
                     strengths.map((item, index) => {
                         const IconComponent = iconMap[item.icon] || iconMap.default;
                         return (
-                            <div key={index} className="fui-panel-green p-4 relative overflow-hidden group">
+                            <div key={index} className="fui-panel-green p-4 relative overflow-hidden group shrink-0">
                                 {/* Hover Glow */}
                                 <div className="absolute inset-0 bg-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
 

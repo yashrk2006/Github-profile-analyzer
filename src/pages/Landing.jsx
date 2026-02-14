@@ -4,6 +4,7 @@ import { FaGithub, FaArrowRight, FaSearch, FaCode, FaChartPie, FaLightbulb, FaRo
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 import { HeroGeometric } from '../components/ui/shape-landing-hero';
 import SearchComponent from '../components/ui/animated-glowing-search-bar';
+import { InteractiveHoverButton } from '../components/ui/interactive-hover-button';
 
 // --- Components ---
 
@@ -174,16 +175,37 @@ const Landing = () => {
 
                         <div className="flex flex-wrap justify-center gap-4 mt-10 text-sm font-medium relative z-20">
                             <span className="text-gray-500 py-1">Trending:</span>
-                            {['torvalds', 'sindresorhus', 'shadcn', 'leerob'].map((user, i) => (
-                                <button
-                                    key={user}
-                                    type="button"
-                                    onClick={() => { setUsername(user); navigate(`/analyze/${user}`); }}
-                                    className="px-4 py-1 rounded-full bg-white/5 border border-white/5 hover:bg-white/10 hover:border-blue-500/30 text-gray-300 hover:text-blue-300 transition-all text-xs uppercase tracking-wide hover:scale-105"
-                                >
-                                    {user}
-                                </button>
+                            {[
+                                { name: 'torvalds', color: 'bg-red-500', border: 'border-red-500/20 hover:border-red-500' },
+                                { name: 'shadcn', color: 'bg-white', border: 'border-white/20 hover:border-white' }, // Shadcn implies white/black
+                                { name: 'leerob', color: 'bg-purple-500', border: 'border-purple-500/20 hover:border-purple-500' },
+                                { name: 'btholt', color: 'bg-orange-500', border: 'border-orange-500/20 hover:border-orange-500' }
+                            ].map((user) => (
+                                <InteractiveHoverButton
+                                    key={user.name}
+                                    text={user.name}
+                                    onClick={() => setUsername(user.name)}
+                                    className={`w-auto min-w-[100px] h-8 px-4 py-1 text-xs ${user.border}`}
+                                    dotColor={user.color}
+                                />
                             ))}
+                        </div>
+
+                        <div className="flex justify-center mt-12 gap-6 relative z-20">
+                            <a href="#features">
+                                <InteractiveHoverButton
+                                    text="Explore Features"
+                                    className="w-[180px] border-blue-500/20 hover:border-blue-500"
+                                    dotColor="bg-blue-600"
+                                />
+                            </a>
+                            <a href="#how-it-works">
+                                <InteractiveHoverButton
+                                    text="How It Works"
+                                    className="w-[180px] bg-transparent border-green-500/20 hover:border-green-500"
+                                    dotColor="bg-green-600"
+                                />
+                            </a>
                         </div>
                     </motion.div>
 

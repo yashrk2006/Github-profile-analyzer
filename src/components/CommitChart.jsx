@@ -29,8 +29,8 @@ const CommitChart = ({ events }) => {
     const commitData = {};
     const today = new Date();
 
-    // Init last 14 days
-    for (let i = 13; i >= 0; i--) {
+    // Init last 30 days (increased from 14)
+    for (let i = 29; i >= 0; i--) {
         const d = new Date();
         d.setDate(today.getDate() - i);
         commitData[d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })] = 0;
@@ -114,7 +114,7 @@ const CommitChart = ({ events }) => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="fui-panel p-6 border-blue-500/20 relative overflow-hidden h-full flex flex-col"
+            className="w-full h-full p-6 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-sm relative overflow-hidden hover:border-blue-500/30 transition-all duration-300"
         >
             <div className="flex items-center justify-between mb-6">
                 <h3 className="text-sm font-bold text-gray-200 tracking-widest uppercase flex items-center gap-2">

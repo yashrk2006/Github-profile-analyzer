@@ -10,18 +10,23 @@ import CodeDNA from '../components/CodeDNA';
 import ActivityHeatmap from '../components/ActivityHeatmap';
 import SystemStatus from '../components/SystemStatus';
 import CommitChart from '../components/CommitChart';
+import { InteractiveHoverButton } from '../components/ui/interactive-hover-button';
 
 const StatBox = ({ icon: Icon, label, value, color, delay }) => (
     <motion.div
-        initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay }}
-        className="bg-[#0d1117] border border-[#30363d] p-4 rounded-xl flex items-center gap-4 hover:border-blue-500/30 transition-colors group"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay, duration: 0.5 }}
+        className="p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm hover:bg-white/10 hover:border-blue-500/30 transition-all duration-300 group hover:-translate-y-1 hover:shadow-lg"
     >
-        <div className={`w-10 h-10 rounded-lg ${color} flex items-center justify-center border border-white/5 group-hover:scale-110 transition-transform`}>
-            <Icon className={color.replace('bg-', 'text-').replace('/10', '')} />
-        </div>
-        <div>
-            <div className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">{label}</div>
-            <div className="text-xl font-mono text-white font-bold">{value}</div>
+        <div className="flex items-center gap-4">
+            <div className={`p-3 rounded-xl ${color.replace('text-', 'bg-')}/10 group-hover:scale-110 transition-transform duration-300`}>
+                <Icon className={`text-2xl ${color}`} />
+            </div>
+            <div>
+                <div className="text-gray-400 text-xs font-medium uppercase tracking-wider mb-1">{label}</div>
+                <div className="text-2xl font-bold text-white tracking-tight">{value}</div>
+            </div>
         </div>
     </motion.div>
 );
@@ -91,11 +96,12 @@ const Results = () => {
                         </ul>
                     </div>
 
-                    <Link
-                        to="/"
-                        className="inline-flex items-center justify-center gap-2 px-8 py-3 bg-red-600 hover:bg-red-500 text-white rounded-full font-bold transition-all hover:scale-105 shadow-[0_0_20px_rgba(220,38,38,0.4)] w-full"
-                    >
-                        <FaSearch /> Search Again
+                    <Link to="/">
+                        <InteractiveHoverButton
+                            text="Search Again"
+                            className="w-full bg-red-600 hover:bg-red-500 border-red-500 text-white"
+                            dotColor="bg-white"
+                        />
                     </Link>
                 </motion.div>
             </div>
@@ -110,21 +116,18 @@ const Results = () => {
         : 'N/A';
 
     return (
-        <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
-            className="min-h-screen bg-[#0b1015] text-gray-300 font-sans selection:bg-blue-500/30 pt-4 pb-12 px-4 md:px-6 max-w-[1800px] mx-auto overflow-x-hidden"
-        >
+        <div className="min-h-screen bg-[#050505] text-white selection:bg-blue-500/30 font-sans">
+            <div className="fixed inset-0 z-0 pointer-events-none">
+                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-blue-500/5 blur-[120px]" />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-purple-500/5 blur-[120px]" />
+            </div>
 
-            <div className="flex flex-col gap-4">
-                {/* --- HEADER: Profile Identity & High-Level Metrics --- */}
+            <div className="max-w-7xl mx-auto px-6 py-12 relative z-10">
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="glass-panel p-5 flex flex-col lg:flex-row items-center lg:items-start justify-between gap-5 border-blue-500/20 relative overflow-hidden"
+                    className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8 mb-16"
                 >
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-gradient-to-b from-blue-500/5 to-transparent pointer-events-none"></div>
                     <div className="flex flex-col md:flex-row items-center gap-5 relative z-10 w-full lg:w-auto">
                         <div className="relative">
                             <img src={profile.avatar} alt={profile.name} className="w-20 h-20 rounded-full border-2 border-blue-500/50 shadow-[0_0_20px_rgba(47,129,247,0.3)]" />
@@ -139,28 +142,37 @@ const Results = () => {
                             <p className="text-gray-400 text-sm max-w-xl font-light leading-relaxed">{profile.bio || "Full Stack Architect focused on scalable systems."}</p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-1 md:gap-6 bg-[#0d1117]/50 p-3 rounded-xl border border-[#30363d] relative z-10 w-full lg:w-auto justify-around lg:justify-end">
-                        <div className="text-center px-3">
-                            <div className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-1">Rank</div>
-                            <div className="text-xl font-black text-white">
-                                TOP {Math.max(100 - scores.overall, 1)}%
+                    <div className="flex flex-col gap-3 w-full lg:w-auto">
+                        <div className="flex items-center gap-1 md:gap-6 bg-[#0d1117]/50 p-3 rounded-xl border border-[#30363d] relative z-10 w-full justify-around lg:justify-end">
+                            <div className="text-center px-3">
+                                <div className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-1">Rank</div>
+                                <div className="text-xl font-black text-white">
+                                    TOP {Math.max(100 - scores.overall, 1)}%
+                                </div>
+                            </div>
+                            <div className="w-[1px] h-7 bg-[#30363d]"></div>
+                            <div className="text-center px-3">
+                                <div className="text-[10px] text-blue-500 uppercase tracking-widest font-bold mb-1 text-glow">Impact</div>
+                                <div className="text-xl font-black text-blue-400">{scores.impact}</div>
+                            </div>
+                            <div className="w-[1px] h-7 bg-[#30363d]"></div>
+                            <div className="text-center px-3">
+                                <div className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-1">Followers</div>
+                                <div className="text-xl font-black text-white">{profile.followers > 1000 ? (profile.followers / 1000).toFixed(1) + 'k' : profile.followers}</div>
                             </div>
                         </div>
-                        <div className="w-[1px] h-7 bg-[#30363d]"></div>
-                        <div className="text-center px-3">
-                            <div className="text-[10px] text-blue-500 uppercase tracking-widest font-bold mb-1 text-glow">Impact</div>
-                            <div className="text-xl font-black text-blue-400">{scores.impact}</div>
-                        </div>
-                        <div className="w-[1px] h-7 bg-[#30363d]"></div>
-                        <div className="text-center px-3">
-                            <div className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-1">Followers</div>
-                            <div className="text-xl font-black text-white">{profile.followers > 1000 ? (profile.followers / 1000).toFixed(1) + 'k' : profile.followers}</div>
-                        </div>
+                        <Link to="/" className="w-full">
+                            <InteractiveHoverButton
+                                text="New Scan"
+                                className="w-full border-blue-500/30 hover:border-blue-500"
+                                dotColor="bg-blue-500"
+                            />
+                        </Link>
                     </div>
                 </motion.div>
 
-                {/* --- STATS GRID (no extra margin, parent gap handles it) --- */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {/* --- STATS GRID --- */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 mb-8">
                     <StatBox icon={FaStar} label="Total Stars" value={totalStars} color="bg-yellow-500/10" delay={0.1} />
                     <StatBox icon={FaCodeBranch} label="Recent Pushes" value={pushEvents} color="bg-blue-500/10" delay={0.15} />
                     <StatBox icon={FaHistory} label="Last Active" value={lastActive} color="bg-green-500/10" delay={0.2} />
@@ -169,8 +181,8 @@ const Results = () => {
 
                 {/* --- AI INSIGHTS BANNER --- */}
                 {data.ai_insight && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="glass-panel p-4 border-l-4 border-l-purple-500">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                        <div className="glass-panel p-6 border-l-4 border-l-purple-500">
                             <div className="flex items-center gap-2 mb-1.5">
                                 <span className="bg-purple-500/20 text-purple-400 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider flex items-center gap-1">
                                     <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse"></span>
@@ -191,27 +203,31 @@ const Results = () => {
                 )}
 
                 {/* --- ROW 1: Strengths | Tech Matrix + Code DNA | Risks --- */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-                    <div className="lg:col-span-3">
+                {/* --- MAIN DASHBOARD GRID (2x2 Layout) --- */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                    {/* Row 1: Core Strengths & Risk Analysis */}
+                    <div className="h-full">
                         <StrengthsPanel strengths={data.strengths} />
                     </div>
-                    <div className="lg:col-span-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-full">
-                            <TechMatrix languages={data.languages || {}} />
-                            <CodeDNA languages={data.languages || {}} />
-                        </div>
-                    </div>
-                    <div className="lg:col-span-3">
+                    <div className="h-full">
                         <RiskPanel redFlags={data.redFlags} />
+                    </div>
+
+                    {/* Row 2: Tech Matrix & Code DNA */}
+                    <div className="h-full">
+                        <TechMatrix languages={data.languages || {}} />
+                    </div>
+                    <div className="h-full">
+                        <CodeDNA languages={data.languages || {}} />
                     </div>
                 </div>
 
                 {/* --- ROW 2: Commit Chart + Activity Signal (full width) --- */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <div className="h-[280px]">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                    <div className="h-[320px]">
                         <CommitChart events={data.events || []} />
                     </div>
-                    <div className="h-[280px]">
+                    <div className="h-[320px]">
                         <ActivityHeatmap events={data.events || []} />
                     </div>
                 </div>
@@ -222,10 +238,10 @@ const Results = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.4 }}
-                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8"
                     >
                         {data.recommendations.map((rec, index) => (
-                            <div key={index} className={`glass-panel p-4 border-l-4 ${rec.type === 'critical' ? 'border-l-red-500' : rec.type === 'warning' ? 'border-l-yellow-500' : 'border-l-blue-500'}`}>
+                            <div key={index} className={`glass-panel p-6 border-l-4 ${rec.type === 'critical' ? 'border-l-red-500' : rec.type === 'warning' ? 'border-l-yellow-500' : 'border-l-blue-500'}`}>
                                 <h4 className={`font-bold text-sm mb-1.5 uppercase tracking-wider ${rec.type === 'critical' ? 'text-red-400' : rec.type === 'warning' ? 'text-yellow-400' : 'text-blue-400'}`}>
                                     {rec.title}
                                 </h4>
@@ -237,7 +253,7 @@ const Results = () => {
             </div>
 
             <SystemStatus />
-        </motion.div>
+        </div>
     );
 };
 

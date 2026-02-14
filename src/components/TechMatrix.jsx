@@ -9,12 +9,10 @@ const TechMatrix = ({ languages }) => {
 
     return (
         <motion.div
-            className="fui-panel p-6 h-full border-blue-500/30 relative overflow-hidden"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.1 }}
-        >
-            <div className="flex items-center justify-between mb-4">
+            className="h-full p-6 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-sm relative overflow-hidden hover:border-blue-500/30 transition-all duration-300 flex flex-col"
+        >    <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-bold text-blue-400 tracking-widest uppercase flex items-center gap-2">
                     Tech Matrix
                 </h3>

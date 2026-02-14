@@ -17,9 +17,9 @@ const ActivityHeatmap = ({ events }) => {
         }
     });
 
-    // Calculate start date (365 days ago, adjusted to Sunday)
+    // Calculate start date (approx 6 months ago) to match GitHub's 90-day event limit data better
     const startDate = new Date();
-    startDate.setDate(today.getDate() - 365);
+    startDate.setDate(today.getDate() - 180); // 180 days ~ 6 months
     const dayOfWeek = startDate.getDay(); // 0 is Sunday
     startDate.setDate(startDate.getDate() - dayOfWeek); // Start on Sunday
 
@@ -29,13 +29,13 @@ const ActivityHeatmap = ({ events }) => {
 
     let currentDate = new Date(startDate);
 
-    // Generate 53 weeks
-    for (let w = 0; w < 53; w++) {
+    // Generate 26 weeks (6 months) instead of 53 to avoid empty space
+    for (let w = 0; w < 26; w++) {
         const week = [];
 
         // Check month for label
         const month = currentDate.getMonth();
-        if (month !== currentMonth && w < 51) { // Avoid label at very end
+        if (month !== currentMonth && w < 24) { // Avoid label at very end
             monthLabels.push({ index: w, label: currentDate.toLocaleString('default', { month: 'short' }) });
             currentMonth = month;
         }
@@ -47,8 +47,7 @@ const ActivityHeatmap = ({ events }) => {
                 week.push(null);
             } else {
                 const count = daysMap.get(dateStr) || 0;
-                // GitHub Levels: 0, 1-?, mean-?, high-?
-                // Simple mapping for now
+                // GitHub Levels
                 let level = 0;
                 if (count > 0) level = 1;
                 if (count > 2) level = 2;
@@ -75,16 +74,15 @@ const ActivityHeatmap = ({ events }) => {
 
     return (
         <motion.div
-            className="md:col-span-1 lg:col-span-2 bg-[#0d1117] border border-[#30363d] rounded-xl p-4 md:p-6"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
+            className="w-full h-full p-6 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-sm relative overflow-hidden hover:border-green-500/30 transition-all duration-300"
         >
             <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold text-white">
-                    {events.length >= 200 ? '200+ contributions' : `${events.length} contributions`} in the last year
+                    {events.length >= 200 ? '200+ contributions' : `${events.length} contributions`} in the last 6 months
                 </h3>
-                <div className="text-xs text-[#8b949e]">Last Year</div>
+                <div className="text-xs text-[#8b949e]">Recent Activity</div>
             </div>
 
             <div className="flex flex-col overflow-x-auto scrollbar-hide">
