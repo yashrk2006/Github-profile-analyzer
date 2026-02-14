@@ -4,6 +4,16 @@
 @tailwind components;
 @tailwind utilities;
 
+body {
+  background-color: #0b1015;
+}
+
+a,
+button,
+input {
+  /* Force hide on interactive elements too */
+}
+
 :root {
   font-family: 'Outfit', system-ui, -apple-system, sans-serif;
   line-height: 1.5;

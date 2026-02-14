@@ -26,7 +26,7 @@ const TechMatrix = ({ languages }) => {
                     return (
                         <div key={lang} className="bg-[#0d1117] border border-[#30363d] p-3 rounded group hover:border-blue-500/50 transition-colors relative flex flex-col justify-between">
                             <div className="flex justify-between items-start mb-1">
-                                <span className="text-[10px] text-gray-500 font-mono">REQ-{index + 1}</span>
+                                <span className="text-[10px] text-gray-400 font-mono">REQ-{index + 1}</span>
                                 <span className="text-[10px] text-blue-500 font-mono">{percentage}%</span>
                             </div>
 

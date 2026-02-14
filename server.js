@@ -26,6 +26,9 @@ const HEADERS = GITHUB_TOKEN ? { Authorization: `token ${GITHUB_TOKEN}` } : {};
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Serve Static Files (Frontend)
+app.use(express.static(path.join(__dirname, 'dist')));
+
 // Scoring Weights
 const WEIGHTS = {
     documentation: 0.20,
@@ -72,17 +75,61 @@ const calculateImpactScore = (repo) => {
     return Math.min(score, 100);
 };
 
+// AI Analyzer
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
+const genAI = process.env.GEMINI_API_KEY ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY) : null;
+
+// Helper: AI Analysis
+const analyzeWithGemini = async (profile, repos, languages) => {
+    if (!genAI) return null;
+
+    try {
+        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+        const prompt = `
+        Analyze this GitHub profile for a recruiter.
+        Profile: ${profile.name} (${profile.login}), Bio: ${profile.bio || "None"}, Repos: ${repos.length}, Top Langs: ${Object.keys(languages).slice(0, 5).join(', ')}.
+        Top Repos: ${repos.slice(0, 3).map(r => r.name + ": " + (r.description || "No desc")).join('; ')}.
+        
+        Provide a JSON response with these fields:
+        {
+            "professional_summary": "A 2-sentence polished bio highlighting their strengths and tech stack mastery. Write in third person.",
+            "recruiter_tip": "A one-sentence actionable tip for a recruiter looking at this profile (e.g., 'Strong fit for frontend roles due to React focus').",
+            "key_strength": "The single most impressive thing about this profile (e.g., 'Consistent open source contributor').",
+             "recommendations": [
+                { "type": "critical", "title": "Short Title", "text": "Actionable advice" },
+                { "type": "info", "title": "Short Title", "text": "Actionable advice" }
+            ]
+        }
+        Return ONLY valid JSON.
+        `;
+
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        // Clean up markdown code blocks if present
+        const text = response.text().replace(/```json/g, '').replace(/```/g, '').trim();
+        return JSON.parse(text);
+    } catch (error) {
+        console.error("AI Analysis Failed:", error.message);
+        return null; // Fallback to standard analysis
+    }
+};
+
 // Core Analyzer
 app.get('/api/analyze/:username', async (req, res) => {
     try {
         const { username } = req.params;
 
         // Concurrent Fetching
-        const [userProfile, repos, events] = await Promise.all([
+        // Concurrent Fetching
+        const [userProfile, repos, eventsPage1, eventsPage2] = await Promise.all([
             fetchGitHub(`https://api.github.com/users/${username}`),
-            fetchGitHub(`https://api.github.com/users/${username}/repos?sort=updated&per_page=30`).catch(() => []),
-            fetchGitHub(`https://api.github.com/users/${username}/events/public?per_page=30`).catch(() => [])
+            fetchGitHub(`https://api.github.com/users/${username}/repos?sort=updated&per_page=100`).catch(() => []),
+            fetchGitHub(`https://api.github.com/users/${username}/events/public?per_page=100&page=1`).catch(() => []),
+            fetchGitHub(`https://api.github.com/users/${username}/events/public?per_page=100&page=2`).catch(() => [])
         ]);
+
+        const events = [...(eventsPage1 || []), ...(eventsPage2 || [])];
 
         if (!userProfile) return res.status(404).json({ error: 'User not found' });
 
@@ -129,48 +176,76 @@ app.get('/api/analyze/:username', async (req, res) => {
         }
 
         // Sort repos by score
-        repoScores.sort((a, b) => b.overall - a.overall).slice(0, 6);
+        repoScores.sort((a, b) => b.overall - a.overall);
 
         // Calculate Aggregate Scores
         const avg = (arr) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
 
+        // Dynamic Code Structure Score (Based on language diversity and repo size)
+        const avgSize = repos.length ? repos.reduce((a, r) => a + r.size, 0) / repos.length : 0;
+        const structureScore = Math.min(
+            (Object.keys(languages).length * 10) +  // Diversity bonus
+            (avgSize > 1000 ? 20 : 0) +             // Serious project bonus
+            (repos.some(r => r.has_pages) ? 10 : 0) + // Deployment bonus
+            (repos.some(r => r.topics && r.topics.length > 0) ? 20 : 0) + // Tagging bonus
+            20, // Base
+            100
+        );
+
         const scores = {
             documentation: Math.round(avg(docScores)) || 0,
-            codeStructure: 60,
+            codeStructure: Math.round(structureScore),
             activity: Math.round(calculateActivityScore(events)),
-            organization: userProfile.bio ? 80 : 40,
+            organization: (userProfile.bio ? 20 : 0) + (userProfile.location ? 10 : 0) + (userProfile.blog ? 20 : 0) + (userProfile.email ? 10 : 0) + (userProfile.company ? 20 : 0) + (userProfile.twitter_username ? 10 : 0),
             impact: Math.min(Math.round(avg(impactScores) + (userProfile.followers * 2)), 100),
             technical: Math.min(Object.keys(languages).length * 15, 100)
         };
 
-        // Overall Score
+        // Overall Score with smoother weighting
         const overallScore = Math.round(
-            (scores.documentation * WEIGHTS.documentation) +
-            (scores.codeStructure * WEIGHTS.codeStructure) +
-            (scores.activity * WEIGHTS.activity) +
-            (scores.organization * WEIGHTS.organization) +
-            (scores.impact * WEIGHTS.impact) +
-            (scores.technical * WEIGHTS.technical)
+            (scores.documentation * 0.25) +
+            (scores.codeStructure * 0.15) +
+            (scores.activity * 0.25) + // Increased weight for activity
+            (scores.organization * 0.10) +
+            (scores.impact * 0.15) +
+            (scores.technical * 0.10)
         );
         const strengths = [];
         const redFlags = [];
 
-        // 1. Analyze Strengths
+        // 1. Analyze Strengths (More Real/Granular)
+        const accountAgeYears = (new Date() - new Date(userProfile.created_at)) / (1000 * 60 * 60 * 24 * 365);
+        const hasPullRequests = events.some(e => e.type === 'PullRequestEvent');
+        const bestRepoStars = Math.max(...repoScores.map(r => r.stars), 0);
+
         if (scores.documentation > 80) strengths.push({ icon: 'FaBook', text: 'Documentation Pro' });
-        if (scores.impact > 70) strengths.push({ icon: 'FaStar', text: 'High Impact' });
+        if (scores.impact > 70 || totalStars > 50) strengths.push({ icon: 'FaStar', text: 'High Impact' });
         if (scores.activity > 80) strengths.push({ icon: 'FaFire', text: 'Consistent Shipper' });
-        if (Object.keys(languages).length > 4) strengths.push({ icon: 'FaCode', text: 'Polyglot' });
+        if (Object.keys(languages).length >= 4) strengths.push({ icon: 'FaCode', text: 'Polyglot' });
         if (userProfile.followers > 50) strengths.push({ icon: 'FaUsers', text: 'Community Leader' });
+        if (accountAgeYears > 3) strengths.push({ icon: 'FaLaptop', text: 'Veteran Developer' });
+        if (hasPullRequests) strengths.push({ icon: 'FaCodeBranch', text: 'Open Source Contributor' }); // Need to import icon or map 'default'
+        if (bestRepoStars > 20) strengths.push({ icon: 'FaRocket', text: 'Creator of Popular Hits' });
+
+        // Fallback strength if empty
         if (strengths.length === 0) strengths.push({ icon: 'FaLaptop', text: 'Rising Developer' });
 
-        // 2. Analyze Red Flags
+        // 2. Analyze Red Flags (More specific)
+        const recentActivity = events.length > 0;
+        const averageRepoAgeDays = repoScores.length > 0
+            ? repoScores.reduce((acc, r) => acc + (new Date() - new Date(r.updated_at)), 0) / repoScores.length / (1000 * 60 * 60 * 24)
+            : 0;
+
         if (scores.documentation < 30) redFlags.push({ icon: 'FaExclamationTriangle', text: 'Missing Docs' });
-        if (scores.activity < 30) redFlags.push({ icon: 'FaRegCalendarTimes', text: 'Ghost Town Activity' });
-        if (totalStars < 5) redFlags.push({ icon: 'FaRegSadTear', text: 'Low Engagement' });
-        if (Object.keys(languages).length === 1) redFlags.push({ icon: 'FaLayerGroup', text: 'Single Language' });
+        if (!recentActivity || scores.activity < 20) redFlags.push({ icon: 'FaRegCalendarTimes', text: 'Ghost Town Activity' });
+        if (totalStars < 2 && accountAgeYears > 1) redFlags.push({ icon: 'FaRegSadTear', text: 'Low Engagement' });
+        if (Object.keys(languages).length === 1 && repoScores.length > 2) redFlags.push({ icon: 'FaLayerGroup', text: 'Single Language Limit' });
+        if (userProfile.following === 0 && userProfile.followers < 5) redFlags.push({ icon: 'FaUserSlash', text: 'Solo Player' }); // Need map for FaUserSlash? checking frontend
+        if (averageRepoAgeDays > 365) redFlags.push({ icon: 'FaHistory', text: 'Legacy/Stale Code' });
+        if (!userProfile.bio && !userProfile.location && !userProfile.company) redFlags.push({ icon: 'FaGhost', text: 'Ghost Profile' });
 
         // Recommendations Logic (Initialize array before use if not already)
-        const recommendations = [];
+        let recommendations = [];
 
         // Check scores before pushing
         if (scores.documentation < 50) recommendations.push({
@@ -196,12 +271,27 @@ app.get('/api/analyze/:username', async (req, res) => {
             text: 'Your profile lacks a bio. Write a short professional summary of who you are and what you do.'
         });
 
+        // --- AI ENHANCEMENT ---
+        // If AI key exists, try to get deeper insights
+        let aiInsights = null;
+        if (process.env.GEMINI_API_KEY) {
+            aiInsights = await analyzeWithGemini(userProfile, repoScores, languages);
+
+            if (aiInsights) {
+                // If AI succeeded, we can merge or replace specific data
+                // For now, let's append AI recommendations to the top of standard ones
+                if (aiInsights.recommendations) {
+                    recommendations = [...aiInsights.recommendations, ...recommendations];
+                }
+            }
+        }
+
         res.json({
             username: userProfile.login,
             profile: {
                 avatar: userProfile.avatar_url,
                 name: userProfile.name,
-                bio: userProfile.bio,
+                bio: aiInsights?.professional_summary || userProfile.bio, // Use AI bio if available
                 location: userProfile.location,
                 followers: userProfile.followers,
                 public_repos: userProfile.public_repos,
@@ -213,12 +303,13 @@ app.get('/api/analyze/:username', async (req, res) => {
                 overall: overallScore,
                 breakdown: scores
             },
-            repos: repoScores.slice(0, 6),
+            repos: repoScores, // Return ALL sorted repos
             languages,
             strengths,
             redFlags,
-            recommendations,
-            events: events.slice(0, 100) // Return top 100 events for heatmap
+            recommendations: recommendations.slice(0, 4), // Limit to top 4
+            events: events.slice(0, 100), // Return top 100 events for heatmap
+            ai_insight: aiInsights // Pass full AI object for frontend to use if needed
         });
 
     } catch (error) {
@@ -236,8 +327,15 @@ app.get('/api/analyze/:username', async (req, res) => {
     }
 });
 
-// Start Server (Only in dev or if not running as serverless)
-if (process.env.NODE_ENV !== 'production') {
+// SPA Fallback (Must be after API routes)
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
+
+// Start Server (Run if executed directly)
+const isMainModule = process.argv[1] === fileURLToPath(import.meta.url);
+
+if (isMainModule) {
     app.listen(PORT, () => {
         console.log(`Server running on http://localhost:${PORT}`);
     });

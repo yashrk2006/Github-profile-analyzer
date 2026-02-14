@@ -1,8 +1,8 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaGithub, FaArrowRight, FaSearch, FaCode, FaChartPie, FaLightbulb, FaRocket, FaShieldAlt, FaMagic, FaCheckCircle } from 'react-icons/fa';
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
+import { HeroGeometric } from '../components/ui/shape-landing-hero';
 
 // --- Components ---
 
@@ -19,7 +19,7 @@ const FloatingElement = ({ children, delay = 0, xOffset = 50, yOffset = 50 }) =>
             ease: "easeInOut",
             delay: delay
         }}
-        className="absolute pointer-events-none z-0 opacity-20 hover:opacity-40 transition-opacity duration-500"
+        className="absolute pointer-events-none z-0 opacity-30 hover:opacity-50 transition-opacity duration-500 mix-blend-screen"
     >
         {children}
     </motion.div>
@@ -31,12 +31,12 @@ const TypewriterText = ({ text, delay = 0 }) => {
         hidden: { opacity: 0 },
         visible: (i = 1) => ({
             opacity: 1,
-            transition: { staggerChildren: 0.05, delayChildren: delay * 0.1 },
+            transition: { staggerChildren: 0.03, delayChildren: delay * 0.1 },
         }),
     };
     const child = {
-        visible: { opacity: 1, y: 0 },
-        hidden: { opacity: 0, y: 20 },
+        visible: { opacity: 1, y: 0, filter: 'blur(0px)' },
+        hidden: { opacity: 0, y: 20, filter: 'blur(10px)' },
     };
 
     return (
@@ -44,7 +44,7 @@ const TypewriterText = ({ text, delay = 0 }) => {
             variants={container}
             initial="hidden"
             animate="visible"
-            className="inline-block"
+            className="inline-block bg-clip-text text-transparent bg-gradient-to-r from-white via-blue-100 to-gray-200"
         >
             {letters.map((letter, index) => (
                 <motion.span variants={child} key={index} className="inline-block">
@@ -112,94 +112,88 @@ const Landing = () => {
     };
 
     return (
-        <div className="min-h-screen flex flex-col relative overflow-hidden bg-[#050505] text-white font-sans selection:bg-blue-500/30">
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, x: -20, transition: { duration: 0.3 } }}
+            className="min-h-screen flex flex-col relative overflow-hidden bg-[#050505] text-white font-sans selection:bg-blue-500/30"
+        >
 
             {/* Progress Bar */}
             <motion.div
-                className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 origin-left z-50"
+                className="fixed top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 origin-left z-50 shadow-[0_0_10px_rgba(59,130,246,0.5)]"
                 style={{ scaleX }}
             />
 
-            {/* Dynamic Background with Floating Elements */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none fixed">
-                {/* Animated Orbs */}
-                <motion.div
-                    animate={{ scale: [1, 1.2, 1], opacity: [0.15, 0.3, 0.15] }}
-                    transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-                    className="absolute top-[-20%] left-[-20%] w-[70vw] h-[70vw] bg-blue-600/10 blur-[150px] rounded-full mix-blend-screen"
-                />
-                <motion.div
-                    animate={{ scale: [1, 1.3, 1], opacity: [0.1, 0.2, 0.1] }}
-                    transition={{ duration: 18, repeat: Infinity, delay: 2, ease: "easeInOut" }}
-                    className="absolute bottom-[-20%] right-[-20%] w-[70vw] h-[70vw] bg-purple-600/10 blur-[150px] rounded-full mix-blend-screen"
-                />
+            {/* Hero Section with Geometric Background */}
+            <HeroGeometric>
+                <div className="max-w-7xl mx-auto px-6 w-full py-24 relative z-10">
 
-                {/* Floating Code Snippets */}
-                <FloatingElement delay={0} xOffset={-40} yOffset={60}>
-                    <div className="top-[15%] left-[5%] font-mono text-xs text-blue-400/20 bg-black/40 p-3 rounded-lg border border-blue-500/10 backdrop-blur-sm shadow-xl">
-                        git commit -m "feat: initial commit"
-                    </div>
-                </FloatingElement>
-                <FloatingElement delay={3} xOffset={50} yOffset={-40}>
-                    <div className="top-[25%] right-[10%] font-mono text-xs text-green-400/20 bg-black/40 p-3 rounded-lg border border-green-500/10 backdrop-blur-sm shadow-xl">
-                        npm install react-framer-motion
-                    </div>
-                </FloatingElement>
-                <FloatingElement delay={5} xOffset={-30} yOffset={-60}>
-                    <div className="bottom-[20%] left-[15%] font-mono text-xs text-purple-400/20 bg-black/40 p-3 rounded-lg border border-purple-500/10 backdrop-blur-sm shadow-xl">
-                        const score = analyze(repo);
-                    </div>
-                </FloatingElement>
-            </div>
+                    {/* Floating Background Icons */}
+                    <FloatingElement delay={0} xOffset={-40} yOffset={40}>
+                        <div className="absolute top-0 left-0 text-blue-500/10 text-9xl font-black opacity-20 transform -rotate-12 select-none">
+                            &lt;/&gt;
+                        </div>
+                    </FloatingElement>
 
-            {/* Hero Section */}
-            <section className="relative z-10 min-h-screen flex flex-col justify-center items-center py-20 bg-[#0d1117]/30 border-t border-white/5">
-                <div className="max-w-7xl mx-auto px-6 w-full">
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        className="text-center mb-12"
+                        className="text-center mb-16"
                     >
-                        <h2 className="text-4xl md:text-6xl font-black mb-6 tracking-tight">
-                            Analyze Any <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 animate-gradient-x">Developer.</span>
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.2 }}
+                            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-300 text-xs font-medium mb-6 uppercase tracking-wider shadow-[0_0_15px_rgba(59,130,246,0.15)]"
+                        >
+                            <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
+                            AI-Powered Profile Analysis
+                        </motion.div>
+
+                        <h2 className="text-5xl md:text-7xl font-black mb-8 tracking-tighter relative z-20 leading-[1.1]">
+                            <span className="block text-gray-200">Unlock Your Full</span>
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 animate-gradient-x drop-shadow-[0_0_30px_rgba(168,85,247,0.3)]">
+                                Developer Potential.
+                            </span>
                         </h2>
-                        <p className="text-gray-400 text-lg max-w-2xl mx-auto font-light mb-10">
-                            Instant insights, recruiter-ready metrics, and deep GitHub analytics.
+                        <p className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto font-light mb-12 relative z-20 leading-relaxed">
+                            Don't let your hard work go unnoticed. Get <span className="text-white font-medium">data-driven insights</span> and <span className="text-white font-medium">recruiter-ready feedback</span> in seconds.
                         </p>
 
                         {/* Massive Search Bar */}
-                        <form onSubmit={handleSubmit} className="w-full max-w-2xl mx-auto relative group z-50">
-                            <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+                        <form onSubmit={handleSubmit} className="w-full max-w-3xl mx-auto relative group z-50">
+                            <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full blur opacity-25 group-hover:opacity-40 transition duration-500 group-hover:duration-200 animate-tilt"></div>
 
-                            <div className="relative flex items-center bg-[#0d1117] rounded-full p-2 border border-[#30363d] shadow-2xl transition-all transform hover:scale-[1.01] hover:border-blue-500/50 focus-within:ring-2 focus-within:ring-blue-500/20">
-                                <FaSearch className="text-gray-500 ml-6 group-focus-within:text-blue-400 transition-colors" size={20} />
+                            <div className="relative flex items-center bg-[#0d1117]/80 backdrop-blur-xl rounded-full p-2 border border-white/10 shadow-2xl transition-all transform group-hover:scale-[1.01] group-hover:border-blue-500/50 focus-within:ring-2 focus-within:ring-blue-500/20">
+                                <FaSearch className="text-gray-500 ml-6 group-focus-within:text-blue-400 transition-colors" size={22} />
 
                                 <input
                                     type="text"
-                                    placeholder="Enter a GitHub username..."
+                                    placeholder="Enter GitHub username..."
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
-                                    className="bg-transparent border-none text-white text-lg w-full px-4 py-4 focus:ring-0 placeholder-gray-600 font-normal outline-none"
+                                    className="bg-transparent border-none text-white text-xl w-full px-4 py-5 focus:ring-0 placeholder-gray-600 font-medium outline-none"
                                 />
 
                                 <button
                                     type="submit"
-                                    className="bg-blue-600 hover:bg-blue-500 text-white p-4 rounded-full font-bold transition-all shadow-lg flex items-center justify-center aspect-square mr-2"
+                                    className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white p-5 rounded-full font-bold transition-all shadow-[0_0_20px_rgba(37,99,235,0.4)] flex items-center justify-center aspect-square mr-1 hover:scale-105 active:scale-95"
                                 >
-                                    <FaArrowRight size={18} />
+                                    <FaArrowRight size={20} />
                                 </button>
                             </div>
                         </form>
 
-                        <div className="flex justify-center gap-6 mt-8 text-sm text-gray-500 font-medium">
-                            <span>Popular:</span>
-                            {['torvalds', 'sindresorhus', 'shadcn'].map((user) => (
+                        <div className="flex flex-wrap justify-center gap-4 mt-10 text-sm font-medium relative z-20">
+                            <span className="text-gray-500 py-1">Trending:</span>
+                            {['torvalds', 'sindresorhus', 'shadcn', 'leerob'].map((user, i) => (
                                 <button
                                     key={user}
                                     type="button"
-                                    onClick={() => { setUsername(user); navigate(`/analyze/${user}`); }} // Fix: Navigate on click
-                                    className="text-blue-400 hover:text-blue-300 transition-all hover:underline"
+                                    onClick={() => { setUsername(user); navigate(`/analyze/${user}`); }}
+                                    className="px-4 py-1 rounded-full bg-white/5 border border-white/5 hover:bg-white/10 hover:border-blue-500/30 text-gray-300 hover:text-blue-300 transition-all text-xs uppercase tracking-wide hover:scale-105"
                                 >
                                     {user}
                                 </button>
@@ -207,7 +201,8 @@ const Landing = () => {
                         </div>
                     </motion.div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative z-20">
+                        {/* Applying staggered entry manually or reusing FeatureCard with valid delay */}
                         <FeatureCard
                             icon={FaChartPie}
                             title="Smart Scoring v2.0"
@@ -217,7 +212,7 @@ const Landing = () => {
                         <FeatureCard
                             icon={FaLightbulb}
                             title="Actionable Feedback"
-                            desc="Don't just get a score. Get a todo list. We tell you exactly what to fix to impress recruiters."
+                            desc="Don't just get a todo list. We tell you exactly what to fix to impress recruiters."
                             delay={0.1}
                         />
                         <FeatureCard
@@ -246,7 +241,7 @@ const Landing = () => {
                         />
                     </div>
                 </div>
-            </section>
+            </HeroGeometric>
 
             {/* How It Works Section */}
             <section className="relative z-10 py-32 bg-gradient-to-b from-transparent to-[#0d1117]">
@@ -263,7 +258,7 @@ const Landing = () => {
                         <p className="text-gray-400 text-lg leading-relaxed mb-8">
                             Three simple steps to level up your engineering portfolio. Our process is designed to be fast, accurate, and insightful.
                         </p>
-                        <div className="p-6 rounded-2xl bg-blue-500/10 border border-blue-500/20 backdrop-blur-sm">
+                        <div className="p-6 rounded-2xl bg-blue-500/10 border border-blue-500/20 backdrop-blur-sm hover:bg-blue-500/20 transition-colors">
                             <FaCheckCircle className="text-blue-400 mb-3" size={24} />
                             <p className="text-blue-200 text-sm font-medium">Trusted by developers worldwide to improve their job prospects.</p>
                         </div>
@@ -320,7 +315,7 @@ const Landing = () => {
                 </div>
             </footer>
 
-        </div>
+        </motion.div>
     );
 };
 

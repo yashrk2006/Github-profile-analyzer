@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaExclamationTriangle, FaRadiation, FaRegCalendarTimes, FaRegSadTear, FaLayerGroup } from 'react-icons/fa';
+import { FaExclamationTriangle, FaRadiation, FaRegCalendarTimes, FaRegSadTear, FaLayerGroup, FaUserSlash, FaHistory, FaGhost } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 
 const iconMap = {
@@ -7,6 +7,9 @@ const iconMap = {
     FaRegCalendarTimes: FaRegCalendarTimes,
     FaRegSadTear: FaRegSadTear,
     FaLayerGroup: FaLayerGroup,
+    FaUserSlash: FaUserSlash,
+    FaHistory: FaHistory,
+    FaGhost: FaGhost,
     default: FaRadiation
 };
 
@@ -40,7 +43,7 @@ const RiskPanel = ({ redFlags }) => {
                                     <IconComponent className="text-red-500 mt-1 shrink-0 animate-pulse" size={14} />
                                     <div>
                                         <h4 className="font-bold text-gray-200 text-sm mb-1">{item.text}</h4>
-                                        <p className="text-xs text-red-400/60">Risk factor detected.</p>
+                                        <p className="text-xs text-red-300/80">Risk factor detected.</p>
                                     </div>
                                 </div>
                             </div>
@@ -48,13 +51,13 @@ const RiskPanel = ({ redFlags }) => {
                     })
                 ) : (
                     <div className="fui-panel p-4 border-l-4 border-l-green-500">
-                        <p className="text-sm text-gray-400">No critical risks detected. Clean record.</p>
+                        <p className="text-sm text-gray-200">No critical risks detected. Clean record.</p>
                     </div>
                 )}
             </div>
 
             {/* FUI Decorative Element */}
-            <div className="mt-auto pt-4 border-t border-red-500/20 flex justify-between text-[10px] text-red-500/40 font-mono">
+            <div className="mt-auto pt-4 border-t border-red-500/20 flex justify-between text-[10px] text-red-400/70 font-mono">
                 <span>SEC-03</span>
                 <span>SCAN COMPLETE</span>
             </div>

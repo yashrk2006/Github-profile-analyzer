@@ -1,5 +1,4 @@
-import React from 'react';
-import { FaCheckCircle, FaBolt, FaBook, FaStar, FaFire, FaCode, FaUsers, FaLaptop } from 'react-icons/fa';
+import { FaCheckCircle, FaBolt, FaBook, FaStar, FaFire, FaCode, FaUsers, FaLaptop, FaCodeBranch, FaRocket } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 
 const iconMap = {
@@ -9,6 +8,8 @@ const iconMap = {
     FaCode: FaCode,
     FaUsers: FaUsers,
     FaLaptop: FaLaptop,
+    FaCodeBranch: FaCodeBranch,
+    FaRocket: FaRocket,
     default: FaBolt
 };
 
@@ -43,19 +44,19 @@ const StrengthsPanel = ({ strengths }) => {
                                     </div>
                                     <div>
                                         <h4 className="font-bold text-white text-sm mb-1">{item.text}</h4>
-                                        <p className="text-xs text-gray-400">Verified by algorithmic analysis.</p>
+                                        <p className="text-xs text-gray-300">Verified by algorithmic analysis.</p>
                                     </div>
                                 </div>
                             </div>
                         );
                     })
                 ) : (
-                    <div className="text-gray-500 text-sm italic p-4">Analyzing patterns...</div>
+                    <div className="text-gray-300 text-sm italic p-4">Analyzing patterns...</div>
                 )}
             </div>
 
             {/* FUI Decorative Element */}
-            <div className="mt-auto pt-4 border-t border-green-500/20 flex justify-between text-[10px] text-green-500/40 font-mono">
+            <div className="mt-auto pt-4 border-t border-green-500/20 flex justify-between text-[10px] text-green-400/70 font-mono">
                 <span>SEC-01</span>
                 <span>CONFIDENCE: 99.8%</span>
             </div>

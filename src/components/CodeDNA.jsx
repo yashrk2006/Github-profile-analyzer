@@ -35,7 +35,7 @@ const CodeDNA = ({ languages }) => {
                 display: true,
                 position: 'bottom',
                 labels: {
-                    color: '#8b949e',
+                    color: '#c9d1d9',
                     font: {
                         family: 'Inter',
                         size: 10
@@ -68,7 +68,7 @@ const CodeDNA = ({ languages }) => {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2 }}
         >
-            <div className="absolute top-4 left-6 text-sm font-bold text-gray-500 tracking-widest uppercase">
+            <div className="absolute top-4 left-6 text-sm font-bold text-gray-200 tracking-widest uppercase">
                 Code DNA
             </div>
 
@@ -77,7 +77,7 @@ const CodeDNA = ({ languages }) => {
                 {/* Center text overlay */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                     <span className="text-3xl font-black text-white">{Object.keys(languages).length}</span>
-                    <span className="text-[10px] text-gray-500 tracking-widest uppercase">Langs</span>
+                    <span className="text-[10px] text-gray-300 tracking-widest uppercase">Langs</span>
                 </div>
             </div>
         </motion.div>
