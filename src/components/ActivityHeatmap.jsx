@@ -1,76 +1,124 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-const ActivityHeatmap = ({ events }) => {
-    // 1. Setup GitHub-like Grid
-    // We need 53 weeks to ensure full coverage of the last year
-    // Grid: columns = weeks, rows = days (0=Sun, 6=Sat)
+const ActivityHeatmap = ({ events, contributionCalendar }) => {
+    // If no contribution data, fallback to old method or show empty state
+    // But we expect contributionCalendar to be populated now
+
+    // transform contributionCalendar data if available
+    // Structure: { total: { "2025": 123 }, contributions: [ { date: "2025-01-01", count: 5, level: 2 }, ... ] }
 
     const today = new Date();
-    const daysMap = new Map();
+    const oneYearAgo = new Date();
+    oneYearAgo.setFullYear(today.getFullYear() - 1);
 
-    // Process events
-    events.forEach(event => {
-        if (event.created_at) {
-            const dateKey = event.created_at.split('T')[0];
-            daysMap.set(dateKey, (daysMap.get(dateKey) || 0) + 1);
+    let heatmapData = [];
+
+    if (contributionCalendar && contributionCalendar.contributions) {
+        // Filter for last 365 days
+        heatmapData = contributionCalendar.contributions.filter(day => {
+            const date = new Date(day.date);
+            return date >= oneYearAgo && date <= today;
+        });
+    } else {
+        // Fallback to events if no calendar data (though server should provide it)
+        // ... (keep old logic or just empty?)
+        // Let's implement robust fallback using events if calendar is missing
+        const daysMap = new Map();
+        events.forEach(event => {
+            if (event.created_at) {
+                const dateKey = event.created_at.split('T')[0];
+                daysMap.set(dateKey, (daysMap.get(dateKey) || 0) + 1);
+            }
+        });
+
+        let currentDate = new Date(oneYearAgo);
+        while (currentDate <= today) {
+            const dateStr = currentDate.toISOString().split('T')[0];
+            const count = daysMap.get(dateStr) || 0;
+            let level = 0;
+            if (count > 0) level = 1;
+            if (count > 2) level = 2;
+            if (count > 4) level = 3;
+            if (count > 8) level = 4;
+
+            heatmapData.push({ date: dateStr, count, level });
+            currentDate.setDate(currentDate.getDate() + 1);
         }
-    });
+    }
 
-    // Calculate start date (approx 6 months ago) to match GitHub's 90-day event limit data better
-    const startDate = new Date();
-    startDate.setDate(today.getDate() - 180); // 180 days ~ 6 months
-    const dayOfWeek = startDate.getDay(); // 0 is Sunday
-    startDate.setDate(startDate.getDate() - dayOfWeek); // Start on Sunday
-
+    // Now organize heatmapData into weeks
     const weeks = [];
     const monthLabels = [];
     let currentMonth = -1;
+    let currentWeek = [];
 
-    let currentDate = new Date(startDate);
+    // Alignment: We need to start the grid carefully.
+    // GitHub starts column 0 with the day of the week of oneYearAgo? 
+    // Usually it's a 53-column grid. Column 0 might be partial.
+    // Let's iterate day by day and push to weeks.
 
-    // Generate 26 weeks (6 months) instead of 53 to avoid empty space
-    for (let w = 0; w < 26; w++) {
-        const week = [];
+    // We need to pad the beginning to align with Sunday
+    const startDate = new Date(heatmapData[0]?.date || oneYearAgo);
+    const startDayOfWeek = startDate.getDay(); // 0=Sun
 
-        // Check month for label
-        const month = currentDate.getMonth();
-        if (month !== currentMonth && w < 24) { // Avoid label at very end
-            monthLabels.push({ index: w, label: currentDate.toLocaleString('default', { month: 'short' }) });
-            currentMonth = month;
-        }
+    // Pad start
+    for (let i = 0; i < startDayOfWeek; i++) {
+        currentWeek.push(null);
+    }
 
-        for (let d = 0; d < 7; d++) {
-            const dateStr = currentDate.toISOString().split('T')[0];
-            // Don't render future days
-            if (currentDate > today) {
-                week.push(null);
-            } else {
-                const count = daysMap.get(dateStr) || 0;
-                // GitHub Levels
-                let level = 0;
-                if (count > 0) level = 1;
-                if (count > 2) level = 2;
-                if (count > 4) level = 3;
-                if (count > 8) level = 4;
-                week.push({ date: dateStr, count, level });
+    heatmapData.forEach((day, index) => {
+        currentWeek.push(day);
+
+        // Month Label Logic
+        const date = new Date(day.date);
+        const month = date.getMonth();
+        if (month !== currentMonth) {
+            // Only add label if it's the first week of the month appearing in the grid
+            if (currentWeek.length === startDayOfWeek + 1 || (currentWeek.length === 1 && weeks.length > 0)) {
+                monthLabels.push({ index: weeks.length, label: date.toLocaleString('default', { month: 'short' }) });
+                currentMonth = month;
             }
-            currentDate.setDate(currentDate.getDate() + 1);
+            // Actually, simplified logic: if first day of month, mark the week index
+            // Let's stick to a simpler approximation for labels
+            if (weeks.length > 0 && currentWeek.length === 1 && month !== currentMonth) {
+                monthLabels.push({ index: weeks.length, label: date.toLocaleString('default', { month: 'short' }) });
+                currentMonth = month;
+            } else if (index === 0) {
+                monthLabels.push({ index: 0, label: date.toLocaleString('default', { month: 'short' }) });
+                currentMonth = month;
+            }
         }
-        weeks.push(week);
+
+        if (currentWeek.length === 7) {
+            weeks.push(currentWeek);
+            currentWeek = [];
+        }
+    });
+
+    // Push remaining
+    if (currentWeek.length > 0) {
+        weeks.push(currentWeek);
     }
 
     // GitHub Green Theme
     const getGitHubColor = (level) => {
         switch (level) {
-            case 0: return 'bg-[#161b22]'; // Empty dot
+            case 0: return 'bg-[#161b22]'; // Empty
             case 1: return 'bg-[#0e4429]'; // L1
             case 2: return 'bg-[#006d32]'; // L2
             case 3: return 'bg-[#26a641]'; // L3
-            case 4: return 'bg-[#39d353]'; // L4 (Brightest)
+            case 4: return 'bg-[#39d353]'; // L4
             default: return 'bg-[#161b22]';
         }
     };
+
+    // Calculate total contributions
+    // Calculate total contributions
+
+    // Better total calculation: use the fetched 'total' for the "last year" if possible, 
+    // or sum the heatmapData count.
+    const totalContributions = heatmapData.reduce((acc, day) => acc + (day ? day.count : 0), 0);
 
     return (
         <motion.div
@@ -80,26 +128,24 @@ const ActivityHeatmap = ({ events }) => {
         >
             <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold text-white">
-                    {events.length >= 200 ? '200+ contributions' : `${events.length} contributions`} in the last 6 months
+                    {totalContributions} contributions in the last year
                 </h3>
-                <div className="text-xs text-[#8b949e]">Recent Activity</div>
+                <div className="text-xs text-[#8b949e]">Contribution Settings</div>
             </div>
 
             <div className="flex flex-col overflow-x-auto scrollbar-hide">
                 {/* Month Labels */}
-                <div className="flex mb-2 text-[10px] text-[#7d8590] ml-8">
+                <div className="flex mb-2 text-[10px] text-[#7d8590] ml-0 relative h-4">
                     {monthLabels.map((m, i) => (
-                        <div key={i} style={{ width: `${(m.index - (monthLabels[i - 1]?.index || 0)) * 14}px` }}>
-                            {/* Rough spacing calculation */}
-                            {i === 0 || (m.index - monthLabels[i - 1].index) > 2 ? m.label : ''}
+                        <div key={i} className="absolute" style={{ left: `${m.index * 13}px` }}>
+                            {m.label}
                         </div>
                     ))}
-                    {/* Fallback spacing fix - render absolute? No, simplified loop is safer */}
                 </div>
 
                 <div className="flex">
                     {/* Day Labels */}
-                    <div className="flex flex-col gap-[3px] mr-2 text-[9px] text-[#7d8590] pt-[15px]">
+                    <div className="flex flex-col gap-[3px] mr-2 text-[9px] text-[#7d8590] pt-[0px]">
                         <div className="h-[10px]"></div> {/* Sun */}
                         <div className="h-[10px] leading-[10px]">Mon</div>
                         <div className="h-[10px]"></div>
@@ -121,7 +167,8 @@ const ActivityHeatmap = ({ events }) => {
                                             className={`w-[10px] h-[10px] rounded-[2px] ${getGitHubColor(day.level)} border border-transparent hover:border-[#8b949e]/50 transition-colors`}
                                         ></div>
                                     ) : (
-                                        <div key={dIndex} className="w-[10px] h-[10px]"></div>
+                                        // Empty slot (padding)
+                                        <div key={`empty-${dIndex}`} className="w-[10px] h-[10px]"></div>
                                     )
                                 ))}
                             </div>

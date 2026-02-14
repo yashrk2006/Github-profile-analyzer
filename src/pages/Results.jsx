@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FaGithub, FaMapMarkerAlt, FaBuilding, FaTwitter, FaUsers, FaArrowLeft, FaExternalLinkAlt, FaStar, FaCodeBranch, FaHistory, FaEye, FaSearch } from 'react-icons/fa';
+import { FaGithub, FaMapMarkerAlt, FaBuilding, FaTwitter, FaUsers, FaArrowLeft, FaExternalLinkAlt, FaStar, FaCodeBranch, FaHistory, FaEye, FaSearch, FaLightbulb } from 'react-icons/fa';
 import axios from 'axios';
 import StrengthsPanel from '../components/StrengthsPanel';
 import RiskPanel from '../components/RiskPanel';
@@ -11,6 +11,7 @@ import ActivityHeatmap from '../components/ActivityHeatmap';
 import SystemStatus from '../components/SystemStatus';
 import CommitChart from '../components/CommitChart';
 import { InteractiveHoverButton } from '../components/ui/interactive-hover-button';
+import { BorderBeam } from '../components/ui/border-beam';
 
 const StatBox = ({ icon: Icon, label, value, color, delay }) => (
     <motion.div
@@ -57,15 +58,56 @@ const Results = () => {
         if (username) fetchData();
     }, [username]);
 
-    if (loading) {
+    // --- Terminal Loading Component ---
+    const TerminalLoading = () => {
+        const [lines, setLines] = useState([]);
+        const steps = [
+            "Initializing connection to GitHub API...",
+            `Targeting user: ${username}...`,
+            "Fetching public repositories...",
+            "Analyzing commit history...",
+            "Calculating code quality metrics...",
+            "Generating profile insights...",
+            "Finalizing report..."
+        ];
+
+        useEffect(() => {
+            let delay = 0;
+            steps.forEach((step, index) => {
+                setTimeout(() => {
+                    setLines(prev => [...prev, step]);
+                }, delay);
+                delay += 800; // Add delay between steps
+            });
+        }, []);
+
         return (
-            <div className="min-h-screen bg-[#0b1015] flex flex-col items-center justify-center text-blue-500 font-mono">
-                <div className="w-24 h-24 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mb-8"></div>
-                <div className="text-xl tracking-widest animate-pulse">INITIALIZING SCAN...</div>
-                <div className="text-xs text-blue-500/50 mt-2">TARGET: {username}</div>
+            <div className="min-h-screen bg-[#0b1015] flex items-center justify-center p-6 font-mono">
+                <div className="w-full max-w-lg bg-[#0d1117] rounded-lg border border-[#30363d] shadow-2xl overflow-hidden">
+                    <div className="bg-[#161b22] px-4 py-2 border-b border-[#30363d] flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                        <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                        <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                        <span className="ml-2 text-xs text-gray-400">analysis_tool.exe</span>
+                    </div>
+                    <div className="p-6 h-64 overflow-y-auto custom-scrollbar">
+                        {lines.map((line, i) => (
+                            <div key={i} className="text-green-400 text-sm mb-2 font-mono">
+                                <span className="text-blue-400 mr-2">➜</span>
+                                {line}
+                            </div>
+                        ))}
+                        <div className="text-green-400 text-sm animate-pulse">
+                            <span className="text-blue-400 mr-2">➜</span>
+                            _<span className="opacity-0">_</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         );
-    }
+    };
+
+    if (loading) return <TerminalLoading />;
 
     if (error) {
         return (
@@ -126,8 +168,9 @@ const Results = () => {
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8 mb-16"
+                    className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8 mb-16 relative p-8 rounded-3xl bg-white/5 border border-white/10 overflow-hidden"
                 >
+                    <BorderBeam size={250} duration={12} delay={9} />
                     <div className="flex flex-col md:flex-row items-center gap-5 relative z-10 w-full lg:w-auto">
                         <div className="relative">
                             <img src={profile.avatar} alt={profile.name} className="w-20 h-20 rounded-full border-2 border-blue-500/50 shadow-[0_0_20px_rgba(47,129,247,0.3)]" />
@@ -171,6 +214,46 @@ const Results = () => {
                     </div>
                 </motion.div>
 
+                {/* --- STRATEGIC RECOMMENDATIONS (PRIORITY) --- */}
+                {data.recommendations && data.recommendations.length > 0 && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                        className="mb-12"
+                    >
+                        <h2 className="text-2xl font-black text-white mb-6 flex items-center gap-2">
+                            <span className="w-2 h-8 bg-blue-500 rounded-full"></span>
+                            Strategic Recommendations
+                            <span className="text-sm font-normal text-gray-500 ml-2 border border-gray-700 px-2 py-0.5 rounded-full">High Priority</span>
+                        </h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {data.recommendations.map((rec, index) => (
+                                <div key={index} className={`relative group p-6 rounded-2xl bg-[#0d1117] border border-white/5 hover:border-white/10 transition-all duration-300 hover:-translate-y-1 shadow-lg overflow-hidden`}>
+                                    {/* Gradient Glow based on type */}
+                                    <div className={`absolute top-0 left-0 w-full h-1 opacity-50 ${rec.type === 'critical' ? 'bg-gradient-to-r from-red-500 to-orange-500' : rec.type === 'warning' ? 'bg-gradient-to-r from-yellow-500 to-orange-500' : 'bg-gradient-to-r from-blue-500 to-cyan-500'}`}></div>
+
+                                    <div className="flex items-start justify-between mb-4">
+                                        <div className={`p-2 rounded-lg ${rec.type === 'critical' ? 'bg-red-500/10 text-red-400' : rec.type === 'warning' ? 'bg-yellow-500/10 text-yellow-400' : 'bg-blue-500/10 text-blue-400'}`}>
+                                            {rec.type === 'critical' ? <FaExternalLinkAlt size={16} /> : rec.type === 'warning' ? <FaHistory size={16} /> : <FaLightbulb size={16} />}
+                                        </div>
+                                        <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded bg-white/5 ${rec.type === 'critical' ? 'text-red-400' : rec.type === 'warning' ? 'text-yellow-400' : 'text-blue-400'}`}>
+                                            {rec.type}
+                                        </span>
+                                    </div>
+
+                                    <h3 className="font-bold text-lg text-white mb-2 group-hover:text-blue-200 transition-colors">
+                                        {rec.title}
+                                    </h3>
+                                    <p className="text-sm text-gray-400 leading-relaxed font-light">
+                                        {rec.text}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                    </motion.div>
+                )}
+
                 {/* --- STATS GRID --- */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 mb-8">
                     <StatBox icon={FaStar} label="Total Stars" value={totalStars} color="bg-yellow-500/10" delay={0.1} />
@@ -204,23 +287,36 @@ const Results = () => {
 
                 {/* --- ROW 1: Strengths | Tech Matrix + Code DNA | Risks --- */}
                 {/* --- MAIN DASHBOARD GRID (2x2 Layout) --- */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <motion.div
+                    initial="hidden"
+                    animate="visible"
+                    variants={{
+                        hidden: { opacity: 0 },
+                        visible: {
+                            opacity: 1,
+                            transition: {
+                                staggerChildren: 0.15
+                            }
+                        }
+                    }}
+                    className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8"
+                >
                     {/* Row 1: Core Strengths & Risk Analysis */}
-                    <div className="h-full">
+                    <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="h-full">
                         <StrengthsPanel strengths={data.strengths} />
-                    </div>
-                    <div className="h-full">
+                    </motion.div>
+                    <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="h-full">
                         <RiskPanel redFlags={data.redFlags} />
-                    </div>
+                    </motion.div>
 
                     {/* Row 2: Tech Matrix & Code DNA */}
-                    <div className="h-full">
+                    <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="h-full">
                         <TechMatrix languages={data.languages || {}} />
-                    </div>
-                    <div className="h-full">
+                    </motion.div>
+                    <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="h-full">
                         <CodeDNA languages={data.languages || {}} />
-                    </div>
-                </div>
+                    </motion.div>
+                </motion.div>
 
                 {/* --- ROW 2: Commit Chart + Activity Signal (full width) --- */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
@@ -228,28 +324,11 @@ const Results = () => {
                         <CommitChart events={data.events || []} />
                     </div>
                     <div className="h-[320px]">
-                        <ActivityHeatmap events={data.events || []} />
+                        <ActivityHeatmap events={data.events || []} contributionCalendar={data.contributionCalendar} />
                     </div>
                 </div>
 
-                {/* --- RECRUITER FEEDBACK SECTION --- */}
-                {data.recommendations && data.recommendations.length > 0 && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4 }}
-                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8"
-                    >
-                        {data.recommendations.map((rec, index) => (
-                            <div key={index} className={`glass-panel p-6 border-l-4 ${rec.type === 'critical' ? 'border-l-red-500' : rec.type === 'warning' ? 'border-l-yellow-500' : 'border-l-blue-500'}`}>
-                                <h4 className={`font-bold text-sm mb-1.5 uppercase tracking-wider ${rec.type === 'critical' ? 'text-red-400' : rec.type === 'warning' ? 'text-yellow-400' : 'text-blue-400'}`}>
-                                    {rec.title}
-                                </h4>
-                                <p className="text-sm text-gray-400 leading-relaxed">{rec.text}</p>
-                            </div>
-                        ))}
-                    </motion.div>
-                )}
+
             </div>
 
             <SystemStatus />

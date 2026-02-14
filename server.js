@@ -97,10 +97,12 @@ const analyzeWithGemini = async (profile, repos, languages) => {
             "recruiter_tip": "A one-sentence actionable tip for a recruiter looking at this profile (e.g., 'Strong fit for frontend roles due to React focus').",
             "key_strength": "The single most impressive thing about this profile (e.g., 'Consistent open source contributor').",
              "recommendations": [
-                { "type": "critical", "title": "Short Title", "text": "Actionable advice" },
-                { "type": "info", "title": "Short Title", "text": "Actionable advice" }
+                { "type": "critical", "title": "Internal Refactoring", "text": "Actionable advice" },
+                { "type": "warning", "title": "Security Check", "text": "Actionable advice" },
+                { "type": "info", "title": "Community Growth", "text": "Actionable advice" }
             ]
         }
+        Provide at least 5-7 detailed, actionable recommendations.
         Return ONLY valid JSON.
         `;
 
@@ -122,11 +124,12 @@ app.get('/api/analyze/:username', async (req, res) => {
 
         // Concurrent Fetching
         // Concurrent Fetching
-        const [userProfile, repos, eventsPage1, eventsPage2] = await Promise.all([
+        const [userProfile, repos, eventsPage1, eventsPage2, contributionData] = await Promise.all([
             fetchGitHub(`https://api.github.com/users/${username}`),
             fetchGitHub(`https://api.github.com/users/${username}/repos?sort=updated&per_page=100`).catch(() => []),
             fetchGitHub(`https://api.github.com/users/${username}/events/public?per_page=100&page=1`).catch(() => []),
-            fetchGitHub(`https://api.github.com/users/${username}/events/public?per_page=100&page=2`).catch(() => [])
+            fetchGitHub(`https://api.github.com/users/${username}/events/public?per_page=100&page=2`).catch(() => []),
+            axios.get(`https://github-contributions-api.jogruber.de/v4/${username}?y=last`).then(res => res.data).catch(() => null)
         ]);
 
         const events = [...(eventsPage1 || []), ...(eventsPage2 || [])];
@@ -307,8 +310,9 @@ app.get('/api/analyze/:username', async (req, res) => {
             languages,
             strengths,
             redFlags,
-            recommendations: recommendations.slice(0, 4), // Limit to top 4
-            events: events.slice(0, 100), // Return top 100 events for heatmap
+            recommendations: recommendations.slice(0, 10), // Limit increased to 10
+            events: events.slice(0, 100), // Return top 100 events for activity feed
+            contributionCalendar: contributionData, // Pass full contribution history
             ai_insight: aiInsights // Pass full AI object for frontend to use if needed
         });
 
