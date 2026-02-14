@@ -210,7 +210,6 @@ const Landing = () => {
                     </motion.div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative z-20">
-                        {/* Applying staggered entry manually or reusing FeatureCard with valid delay */}
                         <FeatureCard
                             icon={FaChartPie}
                             title="Smart Scoring v2.0"
@@ -323,7 +322,7 @@ const Landing = () => {
                 </div>
             </footer>
 
-        </motion.div>
+        </motion.div >
     );
 };
 
